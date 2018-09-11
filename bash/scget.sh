@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#REQUIRES CLIENT_ID or the Soundcloud API will return 401 Unauthorized.
 CLIENT_ID=""
 
 if [ -z "$CLIENT_ID" ]
@@ -9,9 +9,9 @@ then
 fi
 
 if [ $# -eq 0 ]
-    then
-    echo "Provide song URL."
-    exit 1
+then
+  echo "Provide song URL."
+  exit 1
 fi
 
 for SONG_URL in "$@"
