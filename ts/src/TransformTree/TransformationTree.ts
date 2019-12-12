@@ -9,15 +9,14 @@ export class TransformationTree<MsgType> {
     const transformed = {} as MsgType
 
     for (let newKey in this.keys) {
+      let { from = newKey, transformation, required = false, validate } = this.keys[newKey]
 
-      let { from: oldKey = newKey, transformation, required = false, validate } = this.keys[newKey]
-
-      let currentValue = obj[oldKey]
+      let currentValue = obj[from]
 
       // Check only for undefined, as any other value is allowed
       if (currentValue !== undefined) {
         if (validate && !validate(currentValue))
-          throw Error(`Property "${newKey}" did not pass validation with value "${currentValue}"`)
+          throw Error(`Property "${from}" did not pass validation with value "${currentValue}"`)
 
         /*
         Assign value to its new place on the return object:
@@ -28,13 +27,17 @@ export class TransformationTree<MsgType> {
       */
         transformed[newKey] = (() => {
           if (!transformation) return currentValue
-          else if (typeof currentValue === 'object' && transformation instanceof TransformationTree) {
-            return transformation.applyTo(currentValue)
+          else if (transformation instanceof TransformationTree) {
+            if (typeof currentValue === 'object') return transformation.applyTo(currentValue)
+            else
+              throw Error(
+                `Encountered non-object property "${from}" with value "${currentValue}" at TransformationTree node`
+              )
           } else if (typeof transformation === 'function') return transformation(currentValue)
           else return transformation
         })()
         // Stop operation if a required property is not found
-      } else if (required) throw Error(`Required property "${newKey}" is not present`)
+      } else if (required) throw Error(`Required property "${from}" is not present`)
     }
 
     return transformed
@@ -47,11 +50,11 @@ type Transforms<MsgType> = {
     from?: string | newKey
     /**
      * Apply a transformation to the value at this key.
-     * 
+     *
      * The transformation can be a function (which receives the value and must return a value to replace it),
      * or another TransformationTree (which will be applied to the object present at that key).
      * Any other value will replace the value at that location.
-     * 
+     *
      * Not declaring transformation will keep the current value.
      */
     transformation?: TransformationTree<MsgType> | TransformFunction | Literal
@@ -66,5 +69,5 @@ declare type TransformFunction = (value: any) => any
 declare type Literal = string | number | boolean | GenericObject
 
 declare interface GenericObject {
-  [key: string]: any;
+  [key: string]: any
 }

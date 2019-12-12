@@ -3,7 +3,7 @@ import { expect } from 'chai'
 
 import { TransformationTree } from './TransformationTree'
 
-describe('applyTransformationTree', () => {
+describe('TransformationTree', () => {
   it('returns an object', () => {
     let transformation = new TransformationTree({
       a: {}
@@ -181,5 +181,31 @@ describe('applyTransformationTree', () => {
     let obj = { a: false, b: 'b', c: 'c' }
 
     expect(() => transformation.applyTo(obj)).to.throw('Property "a" did not pass validation with value "false"')
+  })
+
+  it('throws an error with the correct message when the property would be moved but does not validate', () => {
+    let transformation = new TransformationTree({
+      a: {
+        from: 'b',
+        validate: val => val === true
+      }
+    })
+
+    let obj = { b: false, c: 'c' }
+
+    expect(() => transformation.applyTo(obj)).to.throw('Property "b" did not pass validation with value "false"')
+  })
+
+  it('throws an error when a TransformationTree node encounters a non-object', () => {
+    let transformation = new TransformationTree({
+      a: {
+        transformation: new TransformationTree({ woof: {} })
+      }
+    })
+
+    let obj = { a: 'throw me' }
+    expect(() => transformation.applyTo(obj)).to.throw(
+      'Encountered non-object property "a" with value "throw me" at TransformationTree node'
+    )
   })
 })

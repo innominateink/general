@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "outDir": "compiled",
+    "lib": ["ES2015"],
+    "removeComments": true,
+    "moduleResolution": "node"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "src/**/*.test.ts"]
+}
